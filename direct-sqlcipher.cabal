@@ -36,16 +36,12 @@ Source-Repository head
   type: git
   location: git://github.com/3noch/direct-sqlcipher.git
 
-flag systemlib
-  description: Use the system-wide sqlite library
-  default: False
-
 flag fulltextsearch
-  description: Enable full-text search when using the bundled sqlite library
+  description: Enable full-text using the bundled SQLite library
   default: True
 
 flag urifilenames
-  description: Enable URI filenames when using the bundled sqlite library
+  description: Enable URI filenames using the bundled SQLite library
   default: True
 
 Library
@@ -55,35 +51,35 @@ Library
     Database.SQLite3.Bindings
     Database.SQLite3.Bindings.Types
 
-  if flag(systemlib) {
-    cpp-options: -Ddirect_sqlite_systemlib
-    extra-libraries: sqlite3
-  } else {
-    if !os(windows) {
-      extra-libraries: pthread crypto ssl
-    }
-    c-sources:
-      cbits/crypto_cc.c
-      cbits/crypto.c
-      cbits/crypto_openssl.c
-      cbits/crypto_libtomcrypt.c
-      cbits/crypto_impl.c
-      cbits/sqlite3.c
+  if os(windows)
+    if arch(x86_64)
+      extra-libraries: ssleay64 libeay64
+    else
+      extra-libraries: ssleay32 libeay32
+  else
+    extra-libraries: pthread crypto ssl
 
-    if flag(fulltextsearch) && flag(urifilenames) {
+  c-sources:
+    cbits/crypto_cc.c
+    cbits/crypto.c
+    cbits/crypto_openssl.c
+    cbits/crypto_libtomcrypt.c
+    cbits/crypto_impl.c
+    cbits/sqlite3.c
+
+  if flag(fulltextsearch) && flag(urifilenames) {
+    cc-options: -DSQLITE_ENABLE_FTS3
+                -DSQLITE_ENABLE_FTS3_PARENTHESIS
+                -DSQLITE_ENABLE_FTS4
+                -DSQLITE_USE_URI
+  } else {
+    if flag(fulltextsearch) {
       cc-options: -DSQLITE_ENABLE_FTS3
                   -DSQLITE_ENABLE_FTS3_PARENTHESIS
                   -DSQLITE_ENABLE_FTS4
-                  -DSQLITE_USE_URI
-    } else {
-      if flag(fulltextsearch) {
-        cc-options: -DSQLITE_ENABLE_FTS3
-                    -DSQLITE_ENABLE_FTS3_PARENTHESIS
-                    -DSQLITE_ENABLE_FTS4
-      }
-      if flag(urifilenames) {
-        cc-options: -DSQLITE_USE_URI
-      }
+    }
+    if flag(urifilenames) {
+      cc-options: -DSQLITE_USE_URI
     }
   }
 
