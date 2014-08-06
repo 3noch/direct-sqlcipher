@@ -5,7 +5,7 @@ import qualified Database.SQLite3.Direct as Direct
 
 import Control.Concurrent
 import Control.Exception
-import Control.Monad        (forM_, liftM3, when)
+import Control.Monad        (forM_, liftM3, unless)
 import Data.Text            (Text)
 import Data.Text.Encoding.Error (UnicodeException(..))
 import Data.Typeable
@@ -782,6 +782,7 @@ withTestEnv cb =
     withConn = withConnPath ":memory:"
     withConnPath path cb = do
       conn <- open path
+      exec conn "PRAGMA key=\"test-key\""
       r <- cb conn `onException` Direct.close conn
             -- If the callback throws an exception, try to close the DB.
             -- If closing fails (usually due to open 'Statement's),
@@ -806,12 +807,14 @@ main = do
                        else Nothing)
              (\_ -> return ())
              (removeFile $ T.unpack sharedDBPath)
-  open sharedDBPath >>= close
 
-  ok <- runTestGroup regressionTests
-  when (not ok) exitFailure
+  conn <- open sharedDBPath
+  putStrLn "Encrypting new connection"
+  exec conn "PRAGMA key=\"test-key\""
+  close conn
+
+  runTestGroup regressionTests >>= (`unless` exitFailure)
 
   -- Signal failure if feature tests fail.  I'd rather print a noisy warning
   -- instead, but cabal redirects test output to log files by default.
-  ok <- runTestGroup featureTests
-  when (not ok) exitFailure
+  runTestGroup featureTests >>= (`unless` exitFailure)
