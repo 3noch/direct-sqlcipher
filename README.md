@@ -1,7 +1,14 @@
-[![Build Status](https://travis-ci.org/IreneKnapp/direct-sqlite.png?branch=master)](https://travis-ci.org/IreneKnapp/direct-sqlite)
+[![Build Status](https://travis-ci.org/3noch/direct-sqlcipher.png?branch=master)]
+(https://travis-ci.org/3noch/direct-sqlcipher)
+
+Minimal modifications to `direct-sqlite` to use [SQLCipher](http://sqlcipher.net/) instead.
+
+
+Disclaimer from the Original Author
+===================================
 
 Experimental Code
-=================
+-----------------
 
 This source-code repository is published here in the hope that it will be
 useful or at least interesting, but is very likely to be in an unfinished
@@ -16,4 +23,3 @@ provided for information only.
 
 If you do something that requires me to write a better disclaimer, I will be
 very irate.
-
